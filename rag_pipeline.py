@@ -82,10 +82,8 @@ if not os.path.exists(INDEX_FILE):
             print("Guardando índice...")
             print(f"Tipo de knowledge_index antes de guardar: {type(knowledge_index)}")
             try:
-                with open(INDEX_FILE, 'wb+') as f: # <-- Intento con 'wb+'
-                    print(f"Tipo de f: {type(f)}")
-                    faiss.write_index(knowledge_index, f)
-                    print("Índice guardado exitosamente.")
+                faiss.write_index(knowledge_index, INDEX_FILE)
+                print("Índice guardado exitosamente.")
                 with open(METADATA_FILE, 'wb') as f:
                     pickle.dump(metadata_list, f)
                     print("Metadatos guardados exitosamente.")
@@ -122,10 +120,8 @@ else:
                 print("Guardando índice...")
                 print(f"Tipo de knowledge_index antes de guardar (intento 2): {type(knowledge_index)}")
                 try:
-                    with open(INDEX_FILE, 'wb+') as f: # <-- Intento con 'wb+' (intento 2)
-                        print(f"Tipo de f (intento 2): {type(f)}")
-                        faiss.write_index(knowledge_index, f)
-                        print("Índice guardado exitosamente (intento 2).")
+                    faiss.write_index(knowledge_index, INDEX_FILE)
+                    print("Índice guardado exitosamente (intento 2).")
                     with open(METADATA_FILE, 'wb') as f:
                         pickle.dump(metadata_list, f)
                         print("Metadatos guardados exitosamente (intento 2).")
