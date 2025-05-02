@@ -1,0 +1,4 @@
+Flask
+sentence-transformers
+PyPDF2  # O pypdf
+faiss-cpu
