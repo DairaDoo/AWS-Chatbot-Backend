@@ -1,0 +1,73 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+      "title": "RAG Chatbot API",
+      "version": "1.0.0",
+      "description": "API para interactuar con el chatbot RAG"
+    },
+    "servers": [
+      {
+        "url": "http://localhost:5000"
+      }
+    ],
+    "paths": {
+      "/consultar": {
+        "post": {
+          "summary": "Realiza una consulta al chatbot",
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "pregunta": {
+                      "type": "string",
+                      "description": "La pregunta del usuario"
+                    }
+                  },
+                  "required": [
+                    "pregunta"
+                  ]
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Respuesta exitosa del chatbot",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "respuesta": {
+                        "type": "string",
+                        "description": "La respuesta del chatbot"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Error en la solicitud",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "error": {
+                        "type": "string",
+                        "description": "Mensaje de error"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
