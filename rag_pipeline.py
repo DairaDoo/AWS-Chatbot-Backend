@@ -1,23 +1,58 @@
 import os
 from sentence_transformers import SentenceTransformer
-import PyPDF2  # O pypdf
+import PyPDF2
 from faiss import IndexFlatL2
 import numpy as np
-import pickle  # Asegúrate de que esté importado
-import faiss  # Asegúrate de importar faiss aquí también
+import pickle
+import faiss
+import requests
+from dotenv import load_dotenv  # Importa la función load_dotenv
 
-# Cargar el modelo de embeddings (¡elige uno pequeño y eficiente!)
-model_name = 'sentence-transformers/all-MiniLM-L6-v2'
+# Cargar las variables de entorno desde el archivo .env
+load_dotenv()
+
+# Cargar el modelo de embeddings
+model_name = 'sentence-transformers/paraphrase-multilingual-mpnet-base-v2'
 model = SentenceTransformer(model_name)
 
 # Directorio donde se guardarán los archivos
 DATA_DIR = 'data'
 INDEX_FILE = 'knowledge_index.faiss'
-METADATA_FILE = 'knowledge_metadata.pkl' # Para guardar la referencia a los chunks
+METADATA_FILE = 'knowledge_metadata.pkl'
 
 knowledge_base = []
 embeddings_list = []
 metadata_list = []
+
+# --- OpenRouter Configuration ---
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")  # Obtén la API key desde las variables de entorno
+MODEL_ENDPOINT = "https://openrouter.ai/api/v1/chat/completions"
+MODEL_NAME = "mistralai/mistral-7b-instruct:free"
+
+headers = {
+    "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+    "HTTP-Referer": "mi-aws-chatbot"  # Reemplaza con tu aplicación
+}
+
+def query_llm(prompt):
+    if not OPENROUTER_API_KEY:
+        print("Error: La variable de entorno OPENROUTER_API_KEY no está configurada.")
+        return "Error: API key no configurada."
+    payload = {
+        "model": MODEL_NAME,
+        "messages": [{"role": "user", "content": prompt}]
+    }
+    try:
+        response = requests.post(MODEL_ENDPOINT, headers=headers, json=payload)
+        response.raise_for_status()
+        return response.json()['choices'][0]['message']['content']
+    except requests.exceptions.RequestException as e:
+        print(f"Error querying OpenRouter API: {e}")
+        return "No se pudo obtener una respuesta del modelo LLM."
+    except (KeyError, IndexError, TypeError) as e:
+        print(f"Error parsing OpenRouter API response: {e}")
+        print(f"Response content: {response.text}")
+        return "Error al procesar la respuesta del modelo LLM."
 
 def load_documents(data_dir=DATA_DIR):
     documents = []
@@ -34,13 +69,12 @@ def load_documents(data_dir=DATA_DIR):
                     pdf_reader = PyPDF2.PdfReader(pdf_file)
                     num_pages = len(pdf_reader.pages)
                     print(f"Procesando PDF: {filename} con {num_pages} páginas.")
-                    for page_num in range(num_pages):
+                    for page_num in range(num_pages):   
                         page = pdf_reader.pages[page_num]
                         text = page.extract_text()
                         if text.strip():
                             documents.append(text)
                             metadata_list.append({"source": filename, "page": page_num + 1})
-                            # print(f"  Extraído texto de la página {page_num + 1}") # Descomentar si quieres ver cada página
             except Exception as e:
                 print(f"Error al leer {filename}: {e}")
     print(f"Total de documentos cargados: {len(documents)}")
@@ -61,15 +95,18 @@ def query_rag_pipeline(pregunta):
     if knowledge_index is None:
         return "El índice de conocimiento no se ha cargado."
     pregunta_embedding = model.encode([pregunta])
-    k = 3
+    k = 5
     distances, indices = knowledge_index.search(np.array(pregunta_embedding), k)
     context = [knowledge_base[i] for i in indices[0]]
     sources = [metadata_list[i] for i in indices[0]]
-    respuesta = "Basándome en la siguiente información:\n\n"
+
+    prompt = f"Basándote principalmente en la siguiente información:\n\n"
     for i, doc in enumerate(context):
-        respuesta += f"Fuente: {sources[i]}\n{doc}\n\n"
-    respuesta += f"Respuesta a tu pregunta: {pregunta} (Esta es una respuesta simple basada en la información encontrada)."
-    return respuesta
+        prompt += f"Fuente: {sources[i]}\n{doc}\n\n"
+    prompt += f"Responde a la siguiente pregunta de forma natural y concisa: {pregunta}"
+
+    llm_response = query_llm(prompt)
+    return llm_response
 
 # Cargar los documentos, crear embeddings e índice al iniciar el backend
 if not os.path.exists(INDEX_FILE):
@@ -80,31 +117,26 @@ if not os.path.exists(INDEX_FILE):
         knowledge_index, _ = create_embeddings_and_index(knowledge_base)
         if knowledge_index:
             print("Guardando índice...")
-            print(f"Tipo de knowledge_index antes de guardar: {type(knowledge_index)}")
             try:
                 faiss.write_index(knowledge_index, INDEX_FILE)
                 print("Índice guardado exitosamente.")
                 with open(METADATA_FILE, 'wb') as f:
                     pickle.dump(metadata_list, f)
                     print("Metadatos guardados exitosamente.")
-            except TypeError as e:
-                print(f"Error al guardar el índice (TypeError): {e}")
             except Exception as e:
-                print(f"Error al guardar el índice (Other): {e}")
+                print(f"Error al guardar el índice: {e}")
         else:
             print("No se pudo crear el índice.")
     else:
         knowledge_index = None
         print("No se encontraron documentos en la carpeta 'data'.")
 else:
-    import faiss
-    import pickle
     print("Cargando índice...")
     try:
         knowledge_index = faiss.read_index(INDEX_FILE)
         with open(METADATA_FILE, 'rb') as f:
             metadata_list = pickle.load(f)
-        documents = load_documents(DATA_DIR) # Volver a cargar los documentos
+        documents = load_documents(DATA_DIR)
         knowledge_base = documents
         print("Índice cargado exitosamente.")
     except Exception as e:
@@ -118,46 +150,15 @@ else:
             knowledge_index, _ = create_embeddings_and_index(knowledge_base)
             if knowledge_index:
                 print("Guardando índice...")
-                print(f"Tipo de knowledge_index antes de guardar (intento 2): {type(knowledge_index)}")
                 try:
                     faiss.write_index(knowledge_index, INDEX_FILE)
-                    print("Índice guardado exitosamente (intento 2).")
+                    print("Índice guardado exitosamente.")
                     with open(METADATA_FILE, 'wb') as f:
                         pickle.dump(metadata_list, f)
-                        print("Metadatos guardados exitosamente (intento 2).")
-                except TypeError as e:
-                    print(f"Error al guardar el índice (TypeError - intento 2): {e}")
+                        print("Metadatos guardados exitosamente.")
                 except Exception as e:
-                    print(f"Error al guardar el índice (Other - intento 2): {e}")
+                    print(f"Error al guardar el índice: {e}")
             else:
-                print("No se pudo crear el índice (intento 2).")
+                print("No se pudo crear el índice.")
         else:
-            print("No se encontraron documentos para crear el índice (intento 2).")
-
-
-if __name__ == '__main__':
-    pregunta_ejemplo = "Dime algo interesante sobre los documentos."
-    if knowledge_index:
-        respuesta_ejemplo = query_rag_pipeline(pregunta_ejemplo)
-        print(f"\nPregunta de prueba: {pregunta_ejemplo}\nRespuesta de prueba: {respuesta_ejemplo}")
-    else:
-        print("\nEl índice de conocimiento no está disponible para la prueba.")
-
-    # --- Código de prueba para guardar un índice simple ---
-    try:
-        print("\n--- Prueba de guardado de índice simple ---")
-        d = 128  # dimensión del vector
-        nb = 1000  # número de vectores de la base de datos
-        xq = np.random.random((1, d)).astype('float32')
-        index_simple = faiss.IndexFlatL2(d)
-        vb = np.random.random((nb, d)).astype('float32')
-        index_simple.add(vb)
-        print(f"Tipo de índice simple: {type(index_simple)}")
-        with open("simple_index.faiss", "wb+") as f_simple:
-            print(f"Tipo de f_simple: {type(f_simple)}")
-            faiss.write_index(index_simple, f_simple)
-            print("Índice simple guardado exitosamente.")
-    except TypeError as e:
-        print(f"Error al guardar el índice simple (TypeError): {e}")
-    except Exception as e:
-        print(f"Error al guardar el índice simple (Other): {e}")
+            print("No se encontraron documentos para crear el índice.")
