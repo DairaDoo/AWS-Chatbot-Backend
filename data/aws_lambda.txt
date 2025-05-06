@@ -1,0 +1,55 @@
+AWS Lambda is a serverless, event-driven compute service that lets you run code without provisioning or managing servers. You pay only for the compute time you consume - there is no charge when your code is not running. Think of it as a way to execute code snippets in response to events, without the overhead of managing infrastructure.   
+
+Core Concepts of AWS Lambda:
+
+Functions: The core of Lambda. A function is your code that you upload to Lambda. When Lambda executes your function, it does so in response to an event trigger. You define the runtime environment (e.g., Python, Node.js, Java, Go, C#, Ruby) and the resources your function needs (memory, execution timeout).   
+Events: The triggers that cause your Lambda function to execute. Events can come from various AWS services or even custom applications. Examples include changes to data in an S3 bucket, messages arriving in an SNS topic or SQS queue, HTTP requests via API Gateway, changes in a DynamoDB table, and scheduled events (cron-like).   
+Triggers: The AWS services or resources configured to invoke your Lambda function when a specific event occurs. You configure these triggers within the Lambda service or within the source service (e.g., setting an S3 bucket to trigger a Lambda function on object creation).   
+Event Source Mappings: For certain event sources (like Kinesis, DynamoDB Streams, and SQS), you create an event source mapping. This specifies the event source, the batch size of records to process, and the Lambda function to invoke. Lambda then polls the event source and invokes your function with batches of records.   
+Execution Environment: A secure and isolated runtime environment where your Lambda function executes. Lambda manages the underlying infrastructure, including the operating system, patching, and scaling.   
+Concurrency: The number of simultaneous executions of your Lambda function. AWS manages the concurrency of your functions, scaling them up or down automatically based on the rate of incoming events. You can also configure reserved concurrency to guarantee a certain level of concurrency for critical functions.   
+Layers: A way to package and share libraries, custom runtimes, data, or configuration files across multiple Lambda functions. This helps reduce the size of your function deployment packages and promotes code reuse.   
+Deployment Package: The ZIP file or container image that contains your function code and its dependencies.
+How AWS Lambda Works:
+
+Upload Code: You write your code in one of the supported languages and package it into a ZIP file or container image. You then upload this package to AWS Lambda.   
+Configure Trigger: You configure a trigger for your Lambda function, specifying the AWS service or event source that will invoke it.   
+Event Occurs: When the configured event occurs in the triggering service (e.g., a file is uploaded to S3), Lambda is notified.   
+Invoke Function: Lambda spins up an execution environment, downloads your code, and invokes your function, passing the event data as an argument.   
+Execute Code: Your function code processes the event data.
+Return Result (Optional): Your function can optionally return a result, which can be used by the invoking service or another part of your application.
+Scale Automatically: Lambda automatically scales the number of execution environments based on the incoming request rate. If there are many concurrent events, Lambda will run multiple instances of your function in parallel.   
+Pay for Usage: You are billed based on the number of requests for your functions and the compute time consumed (measured in GB-seconds). You don't pay anything when your function is not running.   
+Key Features and Benefits of AWS Lambda:
+
+Serverless: No servers to provision, patch, or manage. AWS handles all the underlying infrastructure.   
+Automatic Scaling: Lambda automatically scales your function execution in response to the rate of incoming events.   
+Pay-as-you-go Pricing: You are charged only for the compute time your code consumes and the number of requests.   
+High Availability and Fault Tolerance: Lambda runs your code across multiple Availability Zones for high availability.   
+Integration with Other AWS Services: Lambda integrates seamlessly with a wide range of AWS services, making it a versatile compute option.   
+Choice of Languages: Supports popular programming languages like Python, Node.js, Java, Go, C#, and Ruby, as well as custom runtimes via container images.   
+Cost-Effective for Event-Driven Workloads: Ideal for workloads that are triggered by events and may have variable or infrequent usage.   
+Simplified Operations: Reduces operational overhead by eliminating the need to manage servers.   
+Common Use Cases for AWS Lambda:
+
+Event-Driven Data Processing: Processing files uploaded to S3, handling messages from SQS or Kinesis streams, reacting to changes in DynamoDB tables.
+Real-time Stream Processing: Analyzing and transforming data streams as they arrive.
+Web Applications (Serverless Backends): Building RESTful APIs using API Gateway and Lambda.   
+Mobile Backends: Handling API requests from mobile applications.   
+Chatbots and Conversational Interfaces: Building the logic for chatbots using services like Lex and Lambda.   
+Scheduled Tasks: Running cron-like jobs using CloudWatch Events (now EventBridge) as a trigger.   
+Extending Other AWS Services: Customizing the behavior of other AWS services by triggering Lambda functions in response to events.
+IoT Backends: Processing data from IoT devices.
+Limitations of AWS Lambda (Things to Consider):
+
+Execution Time Limits: Lambda functions have a maximum execution time (currently 15 minutes). For longer-running tasks, consider other services like AWS Batch or EC2.
+Memory Limits: You can configure the amount of memory allocated to your Lambda function (from 128 MB to 10 GB). The amount of CPU and network bandwidth allocated scales proportionally with memory.
+Deployment Package Size Limits: There are limits on the size of your deployment package (both zipped and unzipped). Using layers can help mitigate this.   
+Cold Starts: When a Lambda function hasn't been invoked for a while, the first invocation might experience a "cold start" where Lambda needs to initialize the execution environment. This can introduce some latency. Techniques like provisioned concurrency can help reduce cold starts for critical functions.   
+Stateless Nature: Lambda functions are inherently stateless. If you need to maintain state across invocations, you'll need to use external services like DynamoDB, ElastiCache, or S3.   
+In Conclusion:
+
+AWS Lambda is a powerful and versatile serverless compute service that simplifies building and running event-driven applications. By abstracting away the underlying infrastructure, Lambda allows developers to focus on writing code and innovating quickly, while benefiting from automatic scaling, pay-as-you-go pricing, and seamless integration with the broader AWS ecosystem. Understanding its core concepts, benefits, use cases, and limitations is crucial for leveraging Lambda effectively in your cloud architecture.   
+
+
+Fuentes y contenido relacionado
