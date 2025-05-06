@@ -1,0 +1,33 @@
+Tipo de Instancia EC2: Uso General (General Purpose)
+Descripción: Proporcionan un equilibrio de recursos de computación, memoria y red, y se pueden utilizar para una variedad diversa de cargas de trabajo.
+Ejemplos:
+  - Familia t (p. ej., t4g, t3, t2): Ofrecen un rendimiento de CPU base con la capacidad de bursting para picos de uso. Ideales para cargas de trabajo con uso moderado de CPU que experimentan picos ocasionales, como servidores web pequeños, entornos de desarrollo y pruebas.
+  - Familia m (p. ej., m6g, m5, m4): Ofrecen un equilibrio entre computación, memoria y recursos de red, y se utilizan para muchas cargas de trabajo de propósito general, incluidas aplicaciones web y de servidores, servidores de aplicaciones, back-ends para aplicaciones empresariales y servidores de bases de datos de tamaño pequeño y mediano.
+
+Tipo de Instancia EC2: Optimizado para Cómputo (Compute Optimized)
+Descripción: Diseñadas para cargas de trabajo enlazadas a la CPU y de alto rendimiento computacional.
+Ejemplos:
+  - Familia c (p. ej., c6g, c5, c4): Ofrecen los procesadores más rápidos y una alta relación de rendimiento por precio para cargas de trabajo con uso intensivo de cómputo. Adecuadas para aplicaciones de computación de alto rendimiento (HPC), servidores de juegos, codificación de video, modelado científico y aprendizaje automático (inferencia).
+
+Tipo de Instancia EC2: Optimizado para Memoria (Memory Optimized)
+Descripción: Diseñadas para ofrecer un rendimiento rápido para cargas de trabajo que procesan grandes conjuntos de datos en la memoria.
+Ejemplos:
+  - Familia r (p. ej., r6g, r5, r4): Ofrecen una proporción optimizada de memoria a CPU para aplicaciones de bases de datos en memoria, almacenamiento en caché de datos a gran escala (como Redis y Memcached) y análisis de big data.
+  - Familia x (p. ej., x2gd, x1e, x1): Diseñadas para bases de datos en memoria de alto rendimiento, bases de datos relacionales automatizadas (como SAP HANA), procesamiento de big data y aplicaciones con uso intensivo de memoria.
+  - Familia z (p. ej., z1d): Ofrecen un rendimiento sostenido de un solo subproceso alto y una alta cantidad de memoria por núcleo. Ideales para cargas de trabajo de automatización de diseño electrónico (EDA), juegos y ciertas bases de datos relacionales con altas necesidades de licencia por núcleo.
+
+Tipo de Instancia EC2: Optimizado para Almacenamiento (Storage Optimized)
+Descripción: Diseñadas para cargas de trabajo que requieren acceso secuencial alto y aleatorio a conjuntos de datos muy grandes en almacenamiento conectado localmente.
+Ejemplos:
+  - Familia i (p. ej., i4i, i3en, i3): Ofrecen un rendimiento de IOPS (operaciones de entrada/salida por segundo) aleatorio muy alto para bases de datos NoSQL (como Cassandra y MongoDB), bases de datos OLTP (procesamiento de transacciones en línea) con alto rendimiento y almacenamiento de datos.
+  - Familia d (p. ej., d2, d3en, d4c): Ofrecen almacenamiento en disco duro (HDD) de alta densidad y bajo costo para cargas de trabajo con grandes conjuntos de datos, como procesamiento de Hadoop y sistemas de archivos distribuidos.
+
+Tipo de Instancia EC2: Optimizado para Aceleración (Accelerated Computing)
+Descripción: Utilizan coprocesadores de hardware o aceleradores para realizar funciones, como cálculos de coma flotante, procesamiento de gráficos o cifrado de datos, de manera más eficiente que el software que se ejecuta en las CPU.
+Ejemplos:
+  - Familia p (p. ej., p4d, p3dn, p3): Diseñadas para computación de propósito general con GPU (unidades de procesamiento de gráficos). Ideales para aprendizaje automático (entrenamiento), computación de alto rendimiento (HPC) y otras cargas de trabajo computacionalmente intensivas.
+  - Familia g (p. ej., g4dn, g3s): Diseñadas para aplicaciones con uso intensivo de gráficos, como renderizado 3D, virtualización de estaciones de trabajo y aprendizaje automático (inferencia gráfica).
+  - Familia inf (p. ej., inf1): Diseñadas para inferencia de aprendizaje profundo de alto rendimiento y bajo costo.
+  - Familia f (p. ej., f1): Ofrecen FPGA (matrices de puertas programables en campo) para proporcionar aceleración de hardware personalizable.
+
+Nota: Las familias de instancias a menudo tienen varias generaciones (indicadas por el número después de la letra, p. ej., m5 vs. m6g), con cada generación ofreciendo mejoras en rendimiento, costo o características. Las instancias que terminan en "g" suelen estar basadas en procesadores AWS Graviton, que ofrecen una excelente relación precio/rendimiento.
