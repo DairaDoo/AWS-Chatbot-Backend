@@ -12,7 +12,7 @@ from dotenv import load_dotenv  # Importa la función load_dotenv
 load_dotenv()
 
 # Cargar el modelo de embeddings
-model_name = "sentence-transformers/paraphrase-multilingual-mpnet-base-v2"
+model_name = "all-MiniLM-L6-v2"
 model = SentenceTransformer(model_name)
 
 # Directorio donde se guardarán los archivos
