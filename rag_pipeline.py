@@ -12,40 +12,40 @@ from dotenv import load_dotenv  # Importa la función load_dotenv
 load_dotenv()
 
 # Cargar el modelo de embeddings
-model_name = 'sentence-transformers/paraphrase-multilingual-mpnet-base-v2'
+model_name = "sentence-transformers/paraphrase-multilingual-mpnet-base-v2"
 model = SentenceTransformer(model_name)
 
 # Directorio donde se guardarán los archivos
-DATA_DIR = 'data'
-INDEX_FILE = 'knowledge_index.faiss'
-METADATA_FILE = 'knowledge_metadata.pkl'
+DATA_DIR = "data"
+INDEX_FILE = "knowledge_index.faiss"
+METADATA_FILE = "knowledge_metadata.pkl"
 
 knowledge_base = []
 embeddings_list = []
 metadata_list = []
 
 # --- OpenRouter Configuration ---
-OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")  # Obtén la API key desde las variables de entorno
+OPENROUTER_API_KEY = os.getenv(
+    "OPENROUTER_API_KEY"
+)  # Obtén la API key desde las variables de entorno
 MODEL_ENDPOINT = "https://openrouter.ai/api/v1/chat/completions"
 MODEL_NAME = "mistralai/mistral-7b-instruct:free"
 
 headers = {
     "Authorization": f"Bearer {OPENROUTER_API_KEY}",
-    "HTTP-Referer": "mi-aws-chatbot"  # Reemplaza con tu aplicación
+    "HTTP-Referer": "mi-aws-chatbot",  # Reemplaza con tu aplicación
 }
+
 
 def query_llm(prompt):
     if not OPENROUTER_API_KEY:
         print("Error: La variable de entorno OPENROUTER_API_KEY no está configurada.")
         return "Error: API key no configurada."
-    payload = {
-        "model": MODEL_NAME,
-        "messages": [{"role": "user", "content": prompt}]
-    }
+    payload = {"model": MODEL_NAME, "messages": [{"role": "user", "content": prompt}]}
     try:
         response = requests.post(MODEL_ENDPOINT, headers=headers, json=payload)
         response.raise_for_status()
-        return response.json()['choices'][0]['message']['content']
+        return response.json()["choices"][0]["message"]["content"]
     except requests.exceptions.RequestException as e:
         print(f"Error querying OpenRouter API: {e}")
         return "No se pudo obtener una respuesta del modelo LLM."
@@ -54,31 +54,35 @@ def query_llm(prompt):
         print(f"Response content: {response.text}")
         return "Error al procesar la respuesta del modelo LLM."
 
+
 def load_documents(data_dir=DATA_DIR):
     documents = []
     for filename in os.listdir(data_dir):
         filepath = os.path.join(data_dir, filename)
-        if filename.endswith('.txt'):
-            with open(filepath, 'r', encoding='utf-8') as f:
+        if filename.endswith(".txt"):
+            with open(filepath, "r", encoding="utf-8") as f:
                 documents.append(f.read())
                 metadata_list.append({"source": filename})
                 print(f"Cargado texto de: {filename}")
-        elif filename.endswith('.pdf'):
+        elif filename.endswith(".pdf"):
             try:
-                with open(filepath, 'rb') as pdf_file:
+                with open(filepath, "rb") as pdf_file:
                     pdf_reader = PyPDF2.PdfReader(pdf_file)
                     num_pages = len(pdf_reader.pages)
                     print(f"Procesando PDF: {filename} con {num_pages} páginas.")
-                    for page_num in range(num_pages):   
+                    for page_num in range(num_pages):
                         page = pdf_reader.pages[page_num]
                         text = page.extract_text()
                         if text.strip():
                             documents.append(text)
-                            metadata_list.append({"source": filename, "page": page_num + 1})
+                            metadata_list.append(
+                                {"source": filename, "page": page_num + 1}
+                            )
             except Exception as e:
                 print(f"Error al leer {filename}: {e}")
     print(f"Total de documentos cargados: {len(documents)}")
     return documents
+
 
 def create_embeddings_and_index(documents):
     print(f"Número de documentos para crear embeddings: {len(documents)}")
@@ -90,6 +94,7 @@ def create_embeddings_and_index(documents):
     index.add(embeddings)
     print("Embeddings añadidos al índice.")
     return index, documents
+
 
 def query_rag_pipeline(pregunta):
     if knowledge_index is None:
@@ -108,6 +113,7 @@ def query_rag_pipeline(pregunta):
     llm_response = query_llm(prompt)
     return llm_response
 
+
 # Cargar los documentos, crear embeddings e índice al iniciar el backend
 if not os.path.exists(INDEX_FILE):
     documents = load_documents(DATA_DIR)
@@ -120,7 +126,7 @@ if not os.path.exists(INDEX_FILE):
             try:
                 faiss.write_index(knowledge_index, INDEX_FILE)
                 print("Índice guardado exitosamente.")
-                with open(METADATA_FILE, 'wb') as f:
+                with open(METADATA_FILE, "wb") as f:
                     pickle.dump(metadata_list, f)
                     print("Metadatos guardados exitosamente.")
             except Exception as e:
@@ -134,7 +140,7 @@ else:
     print("Cargando índice...")
     try:
         knowledge_index = faiss.read_index(INDEX_FILE)
-        with open(METADATA_FILE, 'rb') as f:
+        with open(METADATA_FILE, "rb") as f:
             metadata_list = pickle.load(f)
         documents = load_documents(DATA_DIR)
         knowledge_base = documents
@@ -153,7 +159,7 @@ else:
                 try:
                     faiss.write_index(knowledge_index, INDEX_FILE)
                     print("Índice guardado exitosamente.")
-                    with open(METADATA_FILE, 'wb') as f:
+                    with open(METADATA_FILE, "wb") as f:
                         pickle.dump(metadata_list, f)
                         print("Metadatos guardados exitosamente.")
                 except Exception as e:
