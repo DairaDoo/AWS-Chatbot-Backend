@@ -100,7 +100,7 @@ def query_rag_pipeline(pregunta):
     if knowledge_index is None:
         return "El índice de conocimiento no se ha cargado."
     pregunta_embedding = model.encode([pregunta])
-    k = 5
+    k = 3
     distances, indices = knowledge_index.search(np.array(pregunta_embedding), k)
     context = [knowledge_base[i] for i in indices[0]]
     sources = [metadata_list[i] for i in indices[0]]
